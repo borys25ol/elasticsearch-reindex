@@ -1,4 +1,4 @@
-Elasticsearch Reindex Tool
+Elasticsearch Reindex
 ====================
 
 Local install
