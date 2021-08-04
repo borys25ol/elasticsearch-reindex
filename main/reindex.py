@@ -5,7 +5,14 @@ import requests
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 
-from main.const import ES_CHECK_TASK_ENDPOINT, ES_CREATE_TASK_ENDPOINT, HEADERS
+from main.const import (
+    ES_CHECK_TASK_ENDPOINT,
+    ES_CREATE_TASK_ENDPOINT,
+    ES_SOURCE_HOST,
+    ES_SOURCE_PORT,
+    HEADERS,
+    TEST_ENV,
+)
 from main.errors import (
     ES_NODE_NOT_FOUND_ERROR,
     ES_TASK_ID_ERROR,
@@ -97,11 +104,7 @@ class ReindexService:
         reindex_payload = self._get_reindex_body(
             es_index=es_index, source_es_host=source_es_host
         )
-        response = requests.post(
-            url=endpoint,
-            json=reindex_payload,
-            headers=HEADERS,
-        )
+        response = requests.post(url=endpoint, json=reindex_payload, headers=HEADERS)
 
         task_id = response.json()["task"]
 
@@ -123,7 +126,7 @@ class ReindexService:
             and response["error"]["type"] == "illegal_argument_exception"
         ):
             raise ElasticSearchInvalidTaskIDException(
-                message=ES_TASK_ID_ERROR.format(es_host=dest_es_host, task_id=task_id)
+                message=ES_TASK_ID_ERROR.format(host=dest_es_host, task_id=task_id)
             )
 
         response_status = response["task"]["status"]
@@ -140,8 +143,11 @@ class ReindexService:
         """
         Return ElasticSearch reindex body for API request.
         """
+        source_host = (
+            f"{ES_SOURCE_HOST}:{ES_SOURCE_PORT}" if TEST_ENV else source_es_host
+        )
         return {
-            "source": {"remote": {"host": source_es_host}, "index": es_index},
+            "source": {"remote": {"host": source_host}, "index": es_index},
             "conflicts": "proceed",
             "dest": {"index": es_index},
         }
