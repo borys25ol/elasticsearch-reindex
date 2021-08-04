@@ -4,8 +4,8 @@ HEADERS = {
 }
 
 # Endpoint for create internal ElasticSearch reindex task.
-ES_TASK_API_URL = "{es_host}/_reindex?pretty&wait_for_completion=false"
-
+ES_CREATE_TASK_ENDPOINT = "{es_host}/_reindex?pretty&wait_for_completion=false"
+ES_CHECK_TASK_ENDPOINT = "{es_host}/_tasks/{task_id}"
 # Elasticsearch test index.
 ES_TEST_INDEX = "test_index"
 
