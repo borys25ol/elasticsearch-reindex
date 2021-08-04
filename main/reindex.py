@@ -4,7 +4,10 @@ from typing import List
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 
-from main.errors import ElasticSearchNodeNotFoundException, ES_NODE_NOT_FOUND_ERROR
+from main.errors import (
+    ES_NODE_NOT_FOUND_ERROR,
+    ElasticSearchNodeNotFoundException,
+)
 from main.utils import chunkify
 
 

@@ -1,7 +1,7 @@
 from typing import List
 
 from main import const
-from main.reindex import ReindexService, Index
+from main.reindex import Index, ReindexService
 
 
 def test_valid_index_creation(reindex_service: ReindexService):
