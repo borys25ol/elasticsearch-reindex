@@ -22,6 +22,11 @@ To install github hooks:
 
     $ make install_hooks
 
+Create .env file and fill the data:
+
+    $ cp .env.example .env
+
+
 Tests
 ======================
 

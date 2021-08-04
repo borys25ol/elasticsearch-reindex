@@ -2,10 +2,11 @@ version: "3"
 
 services:
   elasticsearch-source:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.0
-    restart: always
-    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
     container_name: elasticsearch-source
+    restart: always
+    env_file:
+      - ./.env
     environment:
       - xpack.security.enabled=false
       - discovery.type=single-node
@@ -19,16 +20,18 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - 9201:9200
+      - ${ES_SOURCE_PORT}:9200
 
   elasticsearch-dest:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.0
-    restart: always
-    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
     container_name: elasticsearch-dest
+    restart: always
+    env_file:
+      - ./.env
     environment:
       - xpack.security.enabled=false
       - discovery.type=single-node
+      - reindex.remote.whitelist=${LOCAL_IP}:${ES_SOURCE_PORT}
     ulimits:
       memlock:
         soft: -1
@@ -39,4 +42,4 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - 9202:9200
+      - ${ES_DEST_PORT}:9200
