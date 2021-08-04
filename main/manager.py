@@ -43,24 +43,28 @@ class Manager:
             f"Partial migrated ES indexes: {len(partial_migrated)}/{len(source_indexes)}\n"
         )
 
-        for es_index in not_migrated:
+        for es_index in list(not_migrated)[:1]:
             task_id = reindex_service.transfer_index(
                 es_index=es_index,
                 source_es_host=source_es_host,
                 dest_es_host=dest_es_host,
             )
+            logger.info(f"Got task for migrate data: {task_id}")
+
             # Wait for Elasticsearch manage input task.
-            sleep(10)
+            sleep(2)
 
             while True:
                 completed, status = reindex_service.check_task_completed(
                     dest_es_host=self.args.dest_host, task_id=task_id
                 )
-                if completed:
-                    break
-
                 logger.info(
-                    f"Task not completed: {task_id}. "
+                    f"Task id: {task_id}. "
                     f"Migrated documents: {status['created']}/{status['total']}"
                 )
-                sleep(10)
+                if not completed:
+                    sleep(10)
+                    continue
+
+                logger.info(f"Task finished: {task_id}\n")
+                break
