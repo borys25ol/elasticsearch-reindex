@@ -1,5 +1,5 @@
-from main.manager import Manager
-from main.parser import parser_factory
+from elasticsearch_reindex.manager import Manager
+from elasticsearch_reindex.parser import parser_factory
 
 
 def main() -> None:
