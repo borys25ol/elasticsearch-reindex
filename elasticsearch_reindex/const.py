@@ -17,9 +17,14 @@ ES_CHECK_TASK_ENDPOINT = "{es_host}/_tasks/{task_id}"
 ES_TEST_INDEX = "test_index"
 
 # Logging message format.
-LOG_FORMAT = "%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s"
+LOG_FORMAT = "%(filename)s[LINE:%(lineno)d]# %(levelname)-2s [%(asctime)s] %(message)s"
+
+DEFAULT_CHECK_INTERVAL = 10
+DEFAULT_CONCURRENT_TASKS = 1
 
 # Variables for testing.
 TEST_ENV = os.getenv("ENV") == "test"
-ES_SOURCE_HOST = os.getenv("LOCAL_HOST")
+ES_SOURCE_HOST = os.getenv("LOCAL_IP")
 ES_SOURCE_PORT = os.getenv("ES_SOURCE_PORT")
+
+LOCAL_SOURCE_HOST = f"http://{ES_SOURCE_HOST}:{ES_SOURCE_PORT}"

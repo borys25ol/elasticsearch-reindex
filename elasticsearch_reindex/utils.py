@@ -3,7 +3,7 @@ from typing import Iterable, List
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from main.logs import create_logger
+from elasticsearch_reindex.logs import create_logger
 
 logger = create_logger(__name__)
 
