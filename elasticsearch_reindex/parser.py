@@ -19,5 +19,17 @@ def parser_factory() -> ArgumentParser:
         required=True,
         help="Destination server: Elasticsearch host where data will be transferred",
     )
+    parser.add_argument(
+        "--check_interval",
+        type=int,
+        required=False,
+        help="Interval for check Elasticsearch reindex task (in seconds)",
+    )
+    parser.add_argument(
+        "--concurrent_tasks",
+        type=int,
+        required=False,
+        help="Interval for check Elasticsearch reindex task (in seconds)",
+    )
 
     return parser
