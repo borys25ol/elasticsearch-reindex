@@ -2,7 +2,12 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# When using this project as package there problem with path resolving.
+# Dotenv using only for development.
+try:
+    load_dotenv()
+except OSError:
+    pass
 
 # Default Headers for call ElasticSearch API.
 HEADERS = {
