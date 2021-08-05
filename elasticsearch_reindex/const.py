@@ -22,7 +22,7 @@ ES_CHECK_TASK_ENDPOINT = "{es_host}/_tasks/{task_id}"
 ES_TEST_INDEX = "test_index"
 
 # Logging message format.
-LOG_FORMAT = "%(filename)s[LINE:%(lineno)d]# %(levelname)-2s [%(asctime)s] %(message)s"
+LOG_FORMAT = "[%(asctime)s] %(message)s"
 
 DEFAULT_CHECK_INTERVAL = 10
 DEFAULT_CONCURRENT_TASKS = 1
