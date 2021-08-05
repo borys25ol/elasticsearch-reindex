@@ -26,6 +26,9 @@ Create .env file and fill the data:
 
     $ cp .env.example .env
 
+Export env variables:
+
+    $ export $(xargs < .env)
 
 Tests
 ======================
