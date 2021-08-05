@@ -1,26 +1,26 @@
 from dataclasses import dataclass
+from time import sleep
 from typing import Dict, List, Tuple
 
 import requests
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 
-from main.const import (
+from elasticsearch_reindex.const import (
     ES_CHECK_TASK_ENDPOINT,
     ES_CREATE_TASK_ENDPOINT,
-    ES_SOURCE_HOST,
-    ES_SOURCE_PORT,
     HEADERS,
+    LOCAL_SOURCE_HOST,
     TEST_ENV,
 )
-from main.errors import (
+from elasticsearch_reindex.errors import (
     ES_NODE_NOT_FOUND_ERROR,
     ES_TASK_ID_ERROR,
     ElasticSearchInvalidTaskIDException,
     ElasticSearchNodeNotFoundException,
 )
-from main.logs import create_logger
-from main.utils import chunkify
+from elasticsearch_reindex.logs import create_logger
+from elasticsearch_reindex.utils import chunkify
 
 logger = create_logger(__name__)
 
@@ -45,57 +45,85 @@ class ReindexService:
         self.dest_es_host = dest_es_host
 
     @property
-    def source_client(self):
+    def source_client(self) -> Elasticsearch:
         """
         Return Elasticsearch client where data will be transferred from.
         """
         return self._get_es_client(es_host=self.source_es_host)
 
     @property
-    def dest_client(self):
+    def dest_client(self) -> Elasticsearch:
         """
         Return Elasticsearch client where data will be transferred.
         """
         return self._get_es_client(es_host=self.dest_es_host)
 
-    @staticmethod
-    def get_all_indexes(client: Elasticsearch) -> List[Index]:
-        """
-        Return all indexes in Elasticsearch and amount of documents.
-        """
-        indexes = client.cat.indices(h="index,docs.count", s="index").split()
-        return [
-            Index(name=name, docs_count=int(count))
-            for name, count in chunkify(lst=indexes, n=2)
-            if not name.startswith(".")
-        ]
-
-    @staticmethod
     def check_migrated_indexes(
-        source_indexes: List[Index], dest_indexes: List[Index]
-    ) -> Tuple[set, set]:
+        self, source_indexes: List[Index], dest_indexes: List[Index]
+    ) -> Tuple[list, list]:
         """
         Check if index from `source_indexes` exist in `dest_indexes`.
         If index already exist we should check if all documents was transferred.
         """
-        not_migrated = set()
-        partial_migrated = set()
+        source_indexes = self._get_flatten_dict(data=source_indexes)
+        dest_indexes = self._get_flatten_dict(data=dest_indexes)
 
-        flatten_source_indexes = {
-            index.name: index.docs_count for index in source_indexes
-        }
-        flatten_dest_indexes = {index.name: index.docs_count for index in dest_indexes}
+        not_migrated, partial_migrated = [], []
 
-        for index in flatten_source_indexes:
-            if index in flatten_dest_indexes:
-                if flatten_source_indexes[index] != flatten_dest_indexes[index]:
-                    partial_migrated.add(index)
+        for index in source_indexes:
+            if index in dest_indexes:
+                if source_indexes[index] != dest_indexes[index]:
+                    partial_migrated.append(index)
             else:
-                not_migrated.add(index)
+                not_migrated.append(index)
 
         return not_migrated, partial_migrated
 
-    def transfer_index(self, es_index: str, source_es_host: str, dest_es_host: str):
+    def transfer_index(
+        self,
+        es_index: str,
+        source_es_host: str,
+        dest_es_host: str,
+        check_interval: int = 10,
+    ) -> str:
+        """
+        Create reindex task and waiting for finish this task.
+
+        :param es_index: Elasticsearch index.
+        :param source_es_host: Source Elasticsearch host.
+        :param dest_es_host: Destination Elasticsearch host.
+        :param check_interval: Period of request task status (in seconds).
+        """
+        task_id = self._create_reindex_task(
+            es_index=es_index,
+            source_es_host=source_es_host,
+            dest_es_host=dest_es_host,
+        )
+        logger.info(f"Got task for migrate data: {task_id}")
+
+        # Wait for Elasticsearch manage input task.
+        sleep(2)
+
+        while True:
+            completed, status = self._check_task_completed(
+                dest_es_host=self.dest_es_host, task_id=task_id
+            )
+            logger.info(
+                f"Task id: {task_id}. "
+                f"Migrated documents: {status['created']}/{status['total']}"
+            )
+            if not completed:
+                sleep(check_interval)
+                continue
+
+            logger.info(f"Task finished: {task_id}")
+            break
+
+        return task_id
+
+    def _create_reindex_task(
+        self, es_index: str, source_es_host: str, dest_es_host: str
+    ) -> str:
         """
         Create reindex task via Elasticsearch API.
         """
@@ -111,7 +139,19 @@ class ReindexService:
         return task_id
 
     @staticmethod
-    def check_task_completed(
+    def get_all_indexes(client: Elasticsearch) -> List[Index]:
+        """
+        Return all indexes in Elasticsearch and amount of documents.
+        """
+        indexes = client.cat.indices(h="index,docs.count", s="index").split()
+        return [
+            Index(name=name, docs_count=int(count))
+            for name, count in chunkify(lst=indexes, n=2)
+            if not name.startswith(".")
+        ]
+
+    @staticmethod
+    def _check_task_completed(
         dest_es_host: str, task_id: str
     ) -> Tuple[bool, Dict[str, int]]:
         """
@@ -143,9 +183,7 @@ class ReindexService:
         """
         Return ElasticSearch reindex body for API request.
         """
-        source_host = (
-            f"{ES_SOURCE_HOST}:{ES_SOURCE_PORT}" if TEST_ENV else source_es_host
-        )
+        source_host = LOCAL_SOURCE_HOST if TEST_ENV else source_es_host
         return {
             "source": {"remote": {"host": source_host}, "index": es_index},
             "conflicts": "proceed",
@@ -166,3 +204,10 @@ class ReindexService:
             )
         else:
             return client
+
+    @staticmethod
+    def _get_flatten_dict(data: List[Index]) -> dict:
+        """
+        Convert list of dataclasses to dict for fast searching.
+        """
+        return {index.name: index.docs_count for index in data}
