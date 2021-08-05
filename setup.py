@@ -10,6 +10,9 @@ DESCRIPTION = (
 with open("README.md", "r") as read_me:
     long_description = read_me.read()
 
+with open("requirements.txt") as f:
+    required = f.read().splitlines()
+
 setup(
     version="0.1.0",
     name="elasticsearch-reindex",
@@ -25,6 +28,7 @@ setup(
     author="Borys Oliinyk",
     author_email="oleynik.boris@gmail.com",
     packages=find_packages(),
+    install_requires=required,
     classifiers=[
         "Operating System :: OS Independent",
         "Programming Language :: Python",
