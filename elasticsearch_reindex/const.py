@@ -1,9 +1,5 @@
 import os
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 # Default Headers for call ElasticSearch API.
 HEADERS = {
     "Content-Type": "application/json",
@@ -26,5 +22,4 @@ DEFAULT_CONCURRENT_TASKS = 1
 TEST_ENV = os.getenv("ENV") == "test"
 ES_SOURCE_HOST = os.getenv("LOCAL_IP")
 ES_SOURCE_PORT = os.getenv("ES_SOURCE_PORT")
-
 LOCAL_SOURCE_HOST = f"http://{ES_SOURCE_HOST}:{ES_SOURCE_PORT}"
