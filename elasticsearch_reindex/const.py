@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Default Headers for call ElasticSearch API.
 HEADERS = {
     "Content-Type": "application/json",
