@@ -1,7 +1,7 @@
 import logging
 from logging import Logger
 
-from main import const
+from elasticsearch_reindex.const import LOG_FORMAT
 
 
 def create_logger(logger_name: str) -> Logger:
@@ -10,7 +10,7 @@ def create_logger(logger_name: str) -> Logger:
     """
     logger = logging.getLogger(logger_name)
 
-    logging.basicConfig(format=const.LOG_FORMAT)
+    logging.basicConfig(format=LOG_FORMAT)
     logger.setLevel(level=logging.INFO)
 
     return logger
