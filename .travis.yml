@@ -9,10 +9,6 @@ install:
 
 script:
   - cat requirements.txt requirements-ci.txt | safety check --stdin
-  - radon cc main -nb --total-average
-  - isort main --diff && isort tests --diff
+  - radon cc elasticsearch_reindex -nb --total-average
+  - isort elasticsearch_reindex --diff && isort tests --diff
   - flake8 ./
-
-after_success:
-  - coverage report -m && coverage xml
-  - bash <(curl -s https://codecov.io/bash)
