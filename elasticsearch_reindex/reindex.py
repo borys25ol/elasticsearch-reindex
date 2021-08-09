@@ -3,10 +3,11 @@ from time import sleep
 from typing import Dict, List, Tuple
 
 import requests
-from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import ConnectionError
+from elasticsearch import exceptions
+from elasticsearch.client import Elasticsearch
 
 from elasticsearch_reindex.const import (
+    DEFAULT_ES_KWARGS,
     ES_CHECK_TASK_ENDPOINT,
     ES_CREATE_TASK_ENDPOINT,
     HEADERS,
@@ -195,10 +196,10 @@ class ReindexService:
         """
         Ping ElasticSearch server and return initialized client object.
         """
-        client = Elasticsearch(hosts=es_host)
+        client = Elasticsearch(hosts=es_host, **DEFAULT_ES_KWARGS)
         try:
-            client.ping()
-        except ConnectionError:
+            client.info()
+        except exceptions.ConnectionError:
             raise ElasticSearchNodeNotFoundException(
                 message=ES_NODE_NOT_FOUND_ERROR.format(host=es_host)
             )
