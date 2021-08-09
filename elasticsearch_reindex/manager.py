@@ -1,7 +1,8 @@
 import os
 from argparse import Namespace
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from typing import Dict
+from dataclasses import dataclass
+from typing import Dict, Optional, Union
 
 from elasticsearch_reindex import const
 from elasticsearch_reindex.logs import create_logger
@@ -10,13 +11,38 @@ from elasticsearch_reindex.reindex import ReindexService
 logger = create_logger(__name__)
 
 
+@dataclass
+class Config:
+    """
+    Dataclass for storing init CLI args.
+    """
+
+    source_host: str
+    dest_host: str
+    check_interval: Optional[int]
+    concurrent_tasks: Optional[int]
+
+
 class Manager:
     """
     Logic for input args handling.
     """
 
-    def __init__(self, args: Namespace) -> None:
+    def __init__(self, args: Union[Namespace, Config]) -> None:
         self.args = args
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        """
+        Initialize Manages class from dict settings.
+        """
+        config = Config(
+            source_host=data["source_host"],
+            dest_host=data["dest_host"],
+            check_interval=data.get("check_interval"),
+            concurrent_tasks=data.get("concurrent_tasks"),
+        )
+        return cls(args=config)
 
     def start_reindex(self) -> None:
         """
