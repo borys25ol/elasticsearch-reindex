@@ -9,3 +9,6 @@ install_hooks:
 
 clean:
 	test -d .ve && rm -rf .ve
+
+test:
+	.ve/bin/python -m pytest .
