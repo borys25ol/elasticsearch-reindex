@@ -13,4 +13,7 @@ def create_logger(logger_name: str) -> Logger:
     logging.basicConfig(format=LOG_FORMAT)
     logger.setLevel(level=logging.INFO)
 
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
+    logging.getLogger("elasticsearch").setLevel(logging.ERROR)
+
     return logger
