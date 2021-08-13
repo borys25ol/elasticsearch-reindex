@@ -7,15 +7,32 @@ Elasticsearch Reindex
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Pre-commit: enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat)](https://github.com/pre-commit/pre-commit)
 
+
 How to use
 -------------
-Install project as the package:
+1. Install project as the package:
+
 
     $ python setup.py install
 
-Use CLI for run migration data:
 
-    $ elasticsearch_reindex --source_host=http://<host>:9201 --dest_host=http://<host>:9202 --check_interval=5 --concurrent_tasks=3
+2. Whitelist `source_host` Elasticsearch  in `dest_host` Elasticsearch.
+
+You should edit Elasticsearch YML config:
+
+#### Config path:
+
+    $ /etc/elasticsearch/elasticsearch.yml
+
+Add setting to the end of the file:
+
+    $ reindex.remote.whitelist: <es-source-host>:<es-source-port>
+
+3. Use CLI for run migration data:
+
+
+    $ elasticsearch_reindex --source_host=http://<es-source-host>:<es-source-port> --dest_host=http://<es-dest-host>:<es-dest-port> --check_interval=5 --concurrent_tasks=3
+
 
 ### CLI Params description (example):
 
