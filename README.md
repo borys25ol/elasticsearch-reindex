@@ -7,6 +7,57 @@ Elasticsearch Reindex
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Pre-commit: enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat)](https://github.com/pre-commit/pre-commit)
 
+How to use
+-------------
+Install project as the package:
+
+    $ python setup.py install
+
+Use CLI for run migration data:
+
+    $ elasticsearch_reindex --source_host=http://<host>:9201 --dest_host=http://<host>:9202 --check_interval=5 --concurrent_tasks=3
+
+### CLI Params description (example):
+
+Required fields:
+
+* `source_host` - Elasticsearch endpoint where data will be extracted.
+
+* `dest_host` - Elasticsearch endpoint where data will be transfered.
+
+Optional fields:
+
+* `check_interval` - Time period (in second) to check task success status.
+
+    `Default value` - `10` (seconds)
+
+* `concurrent_tasks` - How many parallel task Elasticsearch will process.
+
+    `Default value` - `1` (sync mode)
+
+### Run library from Python script:
+
+```python
+from elasticsearch_reindex import Manager
+
+INIT_CONFIG = {
+    "source_host": "http://localhost:9201",
+    "dest_host": "http://localhost:9202",
+    "check_interval": 20,
+    "concurrent_tasks": 5,
+}
+
+
+def main():
+    manager = Manager.from_dict(data=INIT_CONFIG)
+    manager.start_reindex()
+
+
+if __name__ == "__main__":
+    main()
+
+```
+
 Local install
 -------------
 
@@ -30,13 +81,62 @@ Export env variables:
 
     $ export $(xargs < .env)
 
+### Env variables description:
+
+Variable for enable testing:
+
+* `ENV` - variable for enable testing mode.
+For activate test mode set to value - `test`.
+
+Elasticsearch docker settings:
+
+* `ES_SOURCE_PORT` - Source Elasticsearch port
+
+
+* `ES_DEST_PORT` - Destination Elasticsearch port
+
+
+* `ES_VERSION` - Elasticsearch version
+
+
+* `LOCAL_IP` - Address of you local host machine in LAN.
+
+You can find it:
+
+* Mac OS:
+
+
+    $ ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d\  -f2
+
+* Linux (find it in response):
+
+
+    $ ip r
+
 Tests
 ======================
+Firstly up docker-compose services with 2 nodes of ElasticSearch:
 
-Firstly add tests to `PYTHONPATH`
+    $ docker-compose up -d
+
+Ensure that Elasticsearch nodes started correctly.
+
+Env variables set from `.env` file.
+
+For Source Elasticsearch:
+
+    $ curl -X GET $LOCAL_IP:$ES_SOURCE_PORT
+
+
+For destination Elasticsearch:
+
+    $ curl -X GET $LOCAL_IP:$ES_DEST_PORT
+
+
+Export to `PYTHONPATH` env variable:
 
     $ export PYTHONPATH="."
 
-For the rest testing with `pytest`
+For run tests with `pytest` use:
 
-    $ pytest
+    $ pytest ./tests
