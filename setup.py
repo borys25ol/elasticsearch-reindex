@@ -14,7 +14,7 @@ with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 setup(
-    version="0.1.0",
+    version="1.1.0",
     name="elasticsearch-reindex",
     description=DESCRIPTION,
     long_description=long_description,

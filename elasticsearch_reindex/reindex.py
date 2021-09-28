@@ -59,6 +59,17 @@ class ReindexService:
         """
         return self._get_es_client(es_host=self.dest_es_host)
 
+    def get_user_indexes(self, indexes: List[str]) -> List[Index]:
+        """
+        Compare indexes provided by user.
+        Return indexes for migration.
+
+        :param indexes: List of user indexes.
+        :return: List of `Index` objects.
+        """
+        source_indexes = self.get_all_indexes(client=self.source_client)
+        return [index for index in source_indexes if index.name in set(indexes)]
+
     def check_migrated_indexes(
         self, source_indexes: List[Index], dest_indexes: List[Index]
     ) -> Tuple[list, list]:

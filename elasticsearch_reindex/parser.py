@@ -31,5 +31,12 @@ def parser_factory() -> ArgumentParser:
         required=False,
         help="Interval for check Elasticsearch reindex task (in seconds)",
     )
+    parser.add_argument(
+        "--indexes",
+        nargs="*",
+        required=False,
+        default=[],
+        help="List of specific Elasticsearch indexes to migrate",
+    )
 
     return parser
