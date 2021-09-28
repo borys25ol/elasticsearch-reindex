@@ -8,15 +8,16 @@ Elasticsearch Reindex
 [![Pre-commit: enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat)](https://github.com/pre-commit/pre-commit)
 
 
+## Installing
+
+```bash
+pip install elasticsearch-reindex
+```
+
 How to use
 -------------
-1. Install project as the package:
 
-
-    $ python setup.py install
-
-
-2. Whitelist `source_host` Elasticsearch  in `dest_host` Elasticsearch.
+Whitelist `source_host` Elasticsearch  in `dest_host` Elasticsearch.
 
 You should edit Elasticsearch YML config:
 
