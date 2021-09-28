@@ -2,7 +2,7 @@ import os
 from argparse import Namespace
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from elasticsearch_reindex import const
 from elasticsearch_reindex.logs import create_logger
@@ -21,6 +21,7 @@ class Config:
     dest_host: str
     check_interval: Optional[int]
     concurrent_tasks: Optional[int]
+    indexes: Optional[List[str]]
 
 
 class Manager:
@@ -41,6 +42,7 @@ class Manager:
             dest_host=data["dest_host"],
             check_interval=data.get("check_interval"),
             concurrent_tasks=data.get("concurrent_tasks"),
+            indexes=data.get("indexes", []),
         )
         return cls(args=config)
 
@@ -51,14 +53,17 @@ class Manager:
         source_host, dest_host = self.args.source_host, self.args.dest_host
         check_interval = self.args.check_interval or const.DEFAULT_CHECK_INTERVAL
         concurrent_tasks = self.args.concurrent_tasks or const.DEFAULT_CONCURRENT_TASKS
+        user_indexes = self.args.indexes
 
         reindex_service = ReindexService(
             source_es_host=source_host, dest_es_host=dest_host
         )
-
-        source_indexes = reindex_service.get_all_indexes(
-            client=reindex_service.source_client
-        )
+        if user_indexes:
+            source_indexes = reindex_service.get_user_indexes(indexes=user_indexes)
+        else:
+            source_indexes = reindex_service.get_all_indexes(
+                client=reindex_service.source_client,
+            )
         logger.info(f"Source ES host has {len(source_indexes)} indexes")
 
         dest_indexes = reindex_service.get_all_indexes(
@@ -91,10 +96,10 @@ class Manager:
             future = executor.submit(reindex_service.transfer_index, **kwargs)
             futures[future] = es_index
 
-        self.process_result(futures=futures)
+        self._process_result(futures=futures)
 
     @staticmethod
-    def process_result(futures: Dict[Future, str]) -> None:
+    def _process_result(futures: Dict[Future, str]) -> None:
         """
         Process ThreadPoolExecutor tasks result.
         """
