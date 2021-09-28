@@ -31,7 +31,7 @@ Add setting to the end of the file:
 3. Use CLI for run migration data:
 
 
-    $ elasticsearch_reindex --source_host=http://<es-source-host>:<es-source-port> --dest_host=http://<es-dest-host>:<es-dest-port> --check_interval=5 --concurrent_tasks=3
+    $ elasticsearch_reindex --source_host=http://es-source-host:es-source-port --dest_host=http://es-dest-host:es-dest-port --check_interval=5 --concurrent_tasks=3
 
 
 ### CLI Params description (example):
@@ -52,6 +52,9 @@ Optional fields:
 
     `Default value` - `1` (sync mode)
 
+* `indexes` - List of user ES indexes to migrate instead of all source indexes.
+
+
 ### Run library from Python script:
 
 ```python
@@ -62,6 +65,29 @@ INIT_CONFIG = {
     "dest_host": "http://localhost:9202",
     "check_interval": 20,
     "concurrent_tasks": 5,
+}
+
+
+def main():
+    manager = Manager.from_dict(data=INIT_CONFIG)
+    manager.start_reindex()
+
+
+if __name__ == "__main__":
+    main()
+
+```
+
+With custom user indexes:
+```python
+from elasticsearch_reindex import Manager
+
+INIT_CONFIG = {
+    "source_host": "http://localhost:9201",
+    "dest_host": "http://localhost:9202",
+    "check_interval": 20,
+    "concurrent_tasks": 5,
+    "indexes": ["es-index-1", "es-index-2", "es-index-n"]
 }
 
 
@@ -123,7 +149,7 @@ You can find it:
 * Mac OS:
 
 
-    $ ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d\  -f2
+    $ ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1
 
 * Linux (find it in response):
 
