@@ -35,10 +35,10 @@ Use CLI for run migration data:
 
 
     $ elasticsearch_reindex \
-        --source_host=http(s)://es-source-host:es-source-port \
-        --dest_host=http(s)://es-dest-host:es-dest-port \
-        --check_interval=5 \
-        --concurrent_tasks=3 \
+        --source_host http(s)://es-source-host:es-source-port \
+        --dest_host http(s)://es-dest-host:es-dest-port \
+        --check_interval 5 \
+        --concurrent_tasks 3 \
         -i test_index_1 -i test_index_2 
 
 
