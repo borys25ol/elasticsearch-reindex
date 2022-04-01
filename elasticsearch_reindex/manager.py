@@ -1,27 +1,15 @@
 import os
-from argparse import Namespace
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Union
+from typing import Dict
 
-from elasticsearch_reindex import const
+from elasticsearch_reindex.client import ElasticsearchClient
+from elasticsearch_reindex.const import DEFAULT_CHECK_INTERVAL, DEFAULT_CONCURRENT_TASKS
 from elasticsearch_reindex.logs import create_logger
 from elasticsearch_reindex.reindex import ReindexService
+from elasticsearch_reindex.schema import Config
+from elasticsearch_reindex.utils import check_migrated_indexes
 
 logger = create_logger(__name__)
-
-
-@dataclass
-class Config:
-    """
-    Dataclass for storing init CLI args.
-    """
-
-    source_host: str
-    dest_host: str
-    check_interval: Optional[int]
-    concurrent_tasks: Optional[int]
-    indexes: Optional[List[str]]
 
 
 class Manager:
@@ -29,71 +17,66 @@ class Manager:
     Logic for input args handling.
     """
 
-    def __init__(self, args: Union[Namespace, Config]) -> None:
-        self.args = args
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        self.es_client = ElasticsearchClient(
+            source_es_host=config.source_host, dest_es_host=config.dest_host
+        )
+        self.reindex_service = ReindexService(
+            source_es_host=config.source_host, dest_es_host=config.dest_host
+        )
 
     @classmethod
-    def from_dict(cls, data: dict):
+    def from_dict(cls, data: dict) -> "Manager":
         """
         Initialize Manages class from dict settings.
         """
         config = Config(
             source_host=data["source_host"],
             dest_host=data["dest_host"],
-            check_interval=data.get("check_interval"),
-            concurrent_tasks=data.get("concurrent_tasks"),
             indexes=data.get("indexes", []),
+            check_interval=data.get("check_interval", DEFAULT_CHECK_INTERVAL),
+            concurrent_tasks=data.get("concurrent_tasks", DEFAULT_CONCURRENT_TASKS),
         )
-        return cls(args=config)
+        return cls(config=config)
 
     def start_reindex(self) -> None:
         """
         Branching logic by input action.
         """
-        source_host, dest_host = self.args.source_host, self.args.dest_host
-        check_interval = self.args.check_interval or const.DEFAULT_CHECK_INTERVAL
-        concurrent_tasks = self.args.concurrent_tasks or const.DEFAULT_CONCURRENT_TASKS
-        user_indexes = self.args.indexes
-
-        reindex_service = ReindexService(
-            source_es_host=source_host, dest_es_host=dest_host
-        )
-        if user_indexes:
-            source_indexes = reindex_service.get_user_indexes(indexes=user_indexes)
-        else:
-            source_indexes = reindex_service.get_all_indexes(
-                client=reindex_service.source_client,
+        source_indexes = self.es_client.get_source_indexes()
+        if self.config.indexes:
+            source_indexes = self.es_client.get_user_indexes(
+                user_indexes=self.config.indexes, source_indexes=source_indexes
             )
         logger.info(f"Source ES host has {len(source_indexes)} indexes")
 
-        dest_indexes = reindex_service.get_all_indexes(
-            client=reindex_service.dest_client
-        )
-        logger.info(f"Destination ES host has {len(dest_indexes)} indexes\n")
+        dest_indexes = self.es_client.get_dest_indexes()
+        logger.info(f"Destination ES host has {len(dest_indexes)} indexes")
 
-        not_migrated, partial_migrated = reindex_service.check_migrated_indexes(
+        not_migrated_indexes, partial_migrated_indexes = check_migrated_indexes(
             source_indexes=source_indexes, dest_indexes=dest_indexes
         )
         logger.info(
-            f"Not migrated ES indexes: {len(not_migrated)}/{len(source_indexes)}"
+            f"Not migrated ES indexes: {len(not_migrated_indexes)}/{len(source_indexes)}"
         )
         logger.info(
-            f"Partial migrated ES indexes: {len(partial_migrated)}/{len(source_indexes)}\n"
+            f"Partial migrated ES indexes: {len(partial_migrated_indexes)}/{len(source_indexes)}"
         )
 
         # Calculate max concurrent task depends on CPU count.
-        max_workers = min(concurrent_tasks, (os.cpu_count() or 1) * 5)
+        max_workers = min(self.config.concurrent_tasks, (os.cpu_count() or 1) * 5)
         executor = ThreadPoolExecutor(max_workers=max_workers)
 
         futures = {}
-        for es_index in not_migrated:
+        for es_index in not_migrated_indexes:
             kwargs = {
                 "es_index": es_index,
-                "source_es_host": source_host,
-                "dest_es_host": dest_host,
-                "check_interval": check_interval,
+                "source_es_host": self.config.source_host,
+                "dest_es_host": self.config.dest_host,
+                "check_interval": self.config.check_interval,
             }
-            future = executor.submit(reindex_service.transfer_index, **kwargs)
+            future = executor.submit(self.reindex_service.transfer_index, **kwargs)
             futures[future] = es_index
 
         self._process_result(futures=futures)
