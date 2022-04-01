@@ -7,6 +7,8 @@ Elasticsearch Reindex
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Pre-commit: enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat)](https://github.com/pre-commit/pre-commit)
 
+## Description
+This tool can be used to transfer Elasticsearch indexes between different servers.
 
 ## Installing
 
@@ -29,7 +31,7 @@ Add setting to the end of the file:
 
     $ reindex.remote.whitelist: <es-source-host>:<es-source-port>
 
-3. Use CLI for run migration data:
+Use CLI for run migration data:
 
 
     $ elasticsearch_reindex --source_host=http://es-source-host:es-source-port --dest_host=http://es-dest-host:es-dest-port --check_interval=5 --concurrent_tasks=3
