@@ -3,7 +3,9 @@ Setup the package.
 """
 from setuptools import find_packages, setup
 
-package_name = "elasticsearch-reindex"
+project_name = "elasticsearch-reindex"
+package_name = "elasticsearch_reindex"
+
 description = (
     "Python package for simple migration elasticsearch indexes between servers."
 )
@@ -18,7 +20,7 @@ install_requires = ["elasticsearch>=7.13.4", "requests>=2.26.0"]
 
 setup(
     version=version,
-    name=package_name,
+    name=project_name,
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
