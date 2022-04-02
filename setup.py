@@ -3,17 +3,23 @@ Setup the package.
 """
 from setuptools import find_packages, setup
 
-DESCRIPTION = (
+package_name = "elasticsearch-reindex"
+description = (
     "Python package for simple migration elasticsearch indexes between servers."
 )
+version = "1.2.0"
 
 with open("README.md") as read_me:
     long_description = read_me.read()
 
+packages = [package for package in find_packages(where=".", exclude=("test*",))]
+
+install_requires = ["elasticsearch>=7.13.4", "requests>=2.26.0"]
+
 setup(
-    version="1.2.0",
-    name="elasticsearch-reindex",
-    description=DESCRIPTION,
+    version=version,
+    name=package_name,
+    description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/borys25ol/elasticsearch-reindex",
@@ -24,13 +30,18 @@ setup(
     """,
     author="Borys Oliinyk",
     author_email="oleynik.boris@gmail.com",
-    packages=find_packages(),
-    install_requires=["elasticsearch>=7.13.4", "requests>=2.26.0"],
+    packages=packages,
+    package_data={package_name: ["py.typed"]},
+    include_package_data=True,
+    install_requires=install_requires,
     classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: Implementation :: PyPy",
     ],
 )
