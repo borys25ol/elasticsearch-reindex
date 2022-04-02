@@ -16,7 +16,11 @@ with open("README.md") as read_me:
 
 packages = [package for package in find_packages(where=".", exclude=("test*",))]
 
-install_requires = ["elasticsearch>=7.13.4", "requests>=2.26.0"]
+install_requires = [
+    "click-default-group==1.2.2",
+    "elasticsearch>=7.13.4",
+    "requests>=2.26.0",
+]
 
 setup(
     version=version,
