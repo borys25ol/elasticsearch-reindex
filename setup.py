@@ -18,7 +18,7 @@ packages = [package for package in find_packages(where=".", exclude=("test*",))]
 
 install_requires = [
     "click-default-group==1.2.2",
-    "elasticsearch>=7.13.4",
+    "elasticsearch>=7.13.4,<8",
     "requests>=2.26.0",
 ]
 
@@ -44,7 +44,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
