@@ -7,6 +7,8 @@ Elasticsearch Reindex
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Pre-commit: enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat)](https://github.com/pre-commit/pre-commit)
 
+## Description
+This tool can be used to transfer Elasticsearch indexes between different servers.
 
 ## Installing
 
@@ -29,10 +31,15 @@ Add setting to the end of the file:
 
     $ reindex.remote.whitelist: <es-source-host>:<es-source-port>
 
-3. Use CLI for run migration data:
+Use CLI for run migration data:
 
 
-    $ elasticsearch_reindex --source_host=http://es-source-host:es-source-port --dest_host=http://es-dest-host:es-dest-port --check_interval=5 --concurrent_tasks=3
+    $ elasticsearch_reindex \
+        --source_host http(s)://es-source-host:es-source-port \
+        --dest_host http(s)://es-dest-host:es-dest-port \
+        --check_interval 5 \
+        --concurrent_tasks 3 \
+        -i test_index_1 -i test_index_2 
 
 
 ### CLI Params description (example):
@@ -61,21 +68,23 @@ Optional fields:
 ```python
 from elasticsearch_reindex import Manager
 
-INIT_CONFIG = {
+
+def main() -> None:
+  """
+  Example reindex function.
+  """
+  config = {
     "source_host": "http://localhost:9201",
     "dest_host": "http://localhost:9202",
     "check_interval": 20,
     "concurrent_tasks": 5,
-}
-
-
-def main():
-    manager = Manager.from_dict(data=INIT_CONFIG)
-    manager.start_reindex()
+  }
+  manager = Manager.from_dict(data=config)
+  manager.start_reindex()
 
 
 if __name__ == "__main__":
-    main()
+  main()
 
 ```
 
@@ -83,22 +92,24 @@ With custom user indexes:
 ```python
 from elasticsearch_reindex import Manager
 
-INIT_CONFIG = {
+
+def main() -> None:
+  """
+  Example reindex function.
+  """
+  config = {
     "source_host": "http://localhost:9201",
     "dest_host": "http://localhost:9202",
     "check_interval": 20,
     "concurrent_tasks": 5,
     "indexes": ["es-index-1", "es-index-2", "es-index-n"]
-}
-
-
-def main():
-    manager = Manager.from_dict(data=INIT_CONFIG)
-    manager.start_reindex()
+  }
+  manager = Manager.from_dict(data=config)
+  manager.start_reindex()
 
 
 if __name__ == "__main__":
-    main()
+  main()
 
 ```
 
@@ -143,14 +154,14 @@ Elasticsearch docker settings:
 * `ES_VERSION` - Elasticsearch version
 
 
-* `LOCAL_IP` - Address of you local host machine in LAN.
+* `LOCAL_IP` - Address of you local host machine in LAN like `192.168.4.106`.
 
-You can find it:
+You can find it in:
 
 * Mac OS:
 
 
-    $ ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1
+    $ ifconfig
 
 * Linux (find it in response):
 

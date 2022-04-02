@@ -8,19 +8,18 @@ ES_TASK_ID_ERROR = (
 )
 
 
-class ElasticSearchNodeNotFoundException(Exception):
-    """
-    ElasticSearch node not found or can not get access.
-    """
-
-    def __init__(self, message):
+class BaseCustomException(Exception):
+    def __init__(self, message: str) -> None:
         self.message = message
 
 
-class ElasticSearchInvalidTaskIDException(Exception):
+class ElasticSearchNodeNotFoundException(BaseCustomException):
     """
-    ElasticSearch invalid task ID.
+    Exception raised when Elasticsearch node not found or can not get access.
     """
 
-    def __init__(self, message):
-        self.message = message
+
+class ElasticSearchInvalidTaskIDException(BaseCustomException):
+    """
+    Exception raised when got ElasticSearch invalid task ID.
+    """

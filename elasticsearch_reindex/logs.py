@@ -1,10 +1,9 @@
 import logging
-from logging import Logger
 
 from elasticsearch_reindex.const import LOG_FORMAT
 
 
-def create_logger(logger_name: str) -> Logger:
+def create_logger(logger_name: str) -> logging.Logger:
     """
     Initialize logger for project.
     """

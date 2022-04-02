@@ -7,11 +7,11 @@ DESCRIPTION = (
     "Python package for simple migration elasticsearch indexes between servers."
 )
 
-with open("README.md", "r") as read_me:
+with open("README.md") as read_me:
     long_description = read_me.read()
 
 setup(
-    version="1.1.1",
+    version="1.2.0",
     name="elasticsearch-reindex",
     description=DESCRIPTION,
     long_description=long_description,
@@ -20,7 +20,7 @@ setup(
     license="MIT",
     entry_points="""
        [console_scripts]
-       elasticsearch_reindex=elasticsearch_reindex.__main__:main
+       elasticsearch_reindex=elasticsearch_reindex.__main__:cli
     """,
     author="Borys Oliinyk",
     author_email="oleynik.boris@gmail.com",

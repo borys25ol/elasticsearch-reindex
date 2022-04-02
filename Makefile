@@ -12,3 +12,12 @@ clean:
 
 test:
 	.ve/bin/python -m pytest .
+
+run_hooks_on_all_files:
+	pre-commit run --all-files
+
+style:
+	flake8 main && isort main --diff && black main --check
+
+types:
+	mypy --namespace-packages -p "elasticsearch_reindex" --config-file setup.cfg
