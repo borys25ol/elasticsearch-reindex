@@ -13,3 +13,4 @@ eggs
 logs
 project.egg-info
 .vscode
+venv*

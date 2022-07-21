@@ -36,7 +36,9 @@ Use CLI for run migration data:
 
     $ elasticsearch_reindex \
         --source_host http(s)://es-source-host:es-source-port \
+        --source_http_auth username:password \
         --dest_host http(s)://es-dest-host:es-dest-port \
+        --dest_http_auth username:password \
         --check_interval 5 \
         --concurrent_tasks 3 \
         -i test_index_1 -i test_index_2 
@@ -51,6 +53,10 @@ Required fields:
 * `dest_host` - Elasticsearch endpoint where data will be transfered.
 
 Optional fields:
+
+* `source_http_auth` - HTTP Basic authentication, username and password.
+
+* `dest_http_auth` - HTTP Basic authentication, username and password.
 
 * `check_interval` - Time period (in second) to check task success status.
 
@@ -95,14 +101,18 @@ from elasticsearch_reindex import Manager
 
 def main() -> None:
   """
-  Example reindex function.
+  Example reindex function with HTTP Basic authentication.
   """
   config = {
     "source_host": "http://localhost:9201",
     "dest_host": "http://localhost:9202",
     "check_interval": 20,
     "concurrent_tasks": 5,
-    "indexes": ["es-index-1", "es-index-2", "es-index-n"]
+    "indexes": ["es-index-1", "es-index-2", "es-index-n"],
+    # If the source host requires authentication
+    # "source_http_auth": "tmp-source-user:tmp-source-PASSWD.220718",
+    # If the destination host requires authentication
+    # "dest_http_auth": "tmp-reindex-user:tmp--PASSWD.220718",
   }
   manager = Manager.from_dict(data=config)
   manager.start_reindex()
