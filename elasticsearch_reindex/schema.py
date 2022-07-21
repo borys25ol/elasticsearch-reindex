@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from elasticsearch_reindex.const import DEFAULT_CHECK_INTERVAL, DEFAULT_CONCURRENT_TASKS
 
@@ -22,6 +22,8 @@ class Config:
 
     source_host: str
     dest_host: str
+    source_http_auth: [str, Tuple[str], None]
+    dest_http_auth: [str, Tuple[str], None]
     indexes: Optional[List[str]]
     concurrent_tasks: int = DEFAULT_CONCURRENT_TASKS
     check_interval: int = DEFAULT_CHECK_INTERVAL
