@@ -64,7 +64,7 @@ def _parse_auth_string(auth_string: str) -> HttpAuth:
     :return: Parsed HttpAuth object.
     """
     auth_data = auth_string.split(":", 1)
-    if len(auth_data) == 2:
+    if len(auth_data) != 2:
         raise ValueError(
             "Invalid destination HTTP auth format. Expected 'username:password'"
         )
