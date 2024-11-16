@@ -27,6 +27,18 @@ def cli() -> None:
     help="Destination server: Elasticsearch host where data will be transferred",
 )
 @click.option(
+    "--source_http_auth",
+    required=False,
+    type=str,
+    help="Source server: HTTP Basic authentication, username and password",
+)
+@click.option(
+    "--dest_http_auth",
+    required=False,
+    type=str,
+    help="Destination server: HTTP Basic authentication, username and password",
+)
+@click.option(
     "--check_interval",
     required=False,
     type=int,
@@ -41,23 +53,24 @@ def cli() -> None:
 @click.option(
     "--indexes",
     "-i",
-    required=True,
+    required=False,
     multiple=True,
     help="List of specific Elasticsearch indexes to migrate",
 )
 def reindex(
     source_host: str,
     dest_host: str,
+    source_http_auth: str,
+    dest_http_auth: str,
     check_interval: int,
     concurrent_tasks: int,
     indexes: List[str],
 ) -> None:
-    """
-    Upload JSON data files from Github to MongoDB.
-    """
     config = {
         "source_host": source_host,
         "dest_host": dest_host,
+        "source_http_auth": source_http_auth,
+        "dest_http_auth": dest_http_auth,
         "check_interval": check_interval,
         "concurrent_tasks": concurrent_tasks,
         "indexes": list(indexes),

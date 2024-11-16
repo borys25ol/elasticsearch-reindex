@@ -19,12 +19,8 @@ class Manager:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.es_client = ElasticsearchClient(
-            source_es_host=config.source_host, dest_es_host=config.dest_host
-        )
-        self.reindex_service = ReindexService(
-            source_es_host=config.source_host, dest_es_host=config.dest_host
-        )
+        self.es_client = ElasticsearchClient(self.config)
+        self.reindex_service = ReindexService(self.config)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Manager":
@@ -34,10 +30,14 @@ class Manager:
         config = Config(
             source_host=data["source_host"],
             dest_host=data["dest_host"],
+            source_http_auth=data.get("source_http_auth", ""),
+            dest_http_auth=data.get("dest_http_auth", ""),
             indexes=data.get("indexes", []),
             check_interval=data.get("check_interval", DEFAULT_CHECK_INTERVAL),
             concurrent_tasks=data.get("concurrent_tasks", DEFAULT_CONCURRENT_TASKS),
         )
+        config.source_http_auth = tuple(config.source_http_auth.split(":", 1)) if config.source_http_auth else None
+        config.dest_http_auth = tuple(config.dest_http_auth.split(":", 1)) if config.dest_http_auth else None
         return cls(config=config)
 
     def start_reindex(self) -> None:
@@ -72,8 +72,6 @@ class Manager:
         for es_index in not_migrated_indexes:
             kwargs = {
                 "es_index": es_index,
-                "source_es_host": self.config.source_host,
-                "dest_es_host": self.config.dest_host,
                 "check_interval": self.config.check_interval,
             }
             future = executor.submit(self.reindex_service.transfer_index, **kwargs)
