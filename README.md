@@ -41,7 +41,7 @@ Use CLI for run migration data:
         --dest_http_auth username:password \
         --check_interval 5 \
         --concurrent_tasks 3 \
-        -i test_index_1 -i test_index_2 
+        -i test_index_1 -i test_index_2
 
 
 ### CLI Params description (example):

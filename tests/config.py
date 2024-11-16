@@ -1,6 +1,7 @@
 """
 Variables for testing.
 """
+
 import os
 
 TEST_ENV = os.getenv("ENV") == "test"
