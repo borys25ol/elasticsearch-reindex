@@ -3,26 +3,31 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 
 from elasticsearch_reindex.client import ElasticsearchClient
 from elasticsearch_reindex.const import DEFAULT_CHECK_INTERVAL, DEFAULT_CONCURRENT_TASKS
-from elasticsearch_reindex.logs import create_logger
+from elasticsearch_reindex.logger import create_logger
 from elasticsearch_reindex.reindex import ReindexService
-from elasticsearch_reindex.schema import Config
+from elasticsearch_reindex.schema import Config, Index
 from elasticsearch_reindex.utils import check_migrated_indexes
 
-logger = create_logger(__name__)
+logger = create_logger()
 
 
-class Manager:
+class ReindexManager:
     """
     Logic for input args handling.
     """
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.es_client = ElasticsearchClient(self.config)
+        self.es_dest_client = ElasticsearchClient.from_config(
+            config=config.dest_es_config
+        )
+        self.es_source_client = ElasticsearchClient.from_config(
+            config=config.source_es_config
+        )
         self.reindex_service = ReindexService(self.config)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Manager":
+    def from_dict(cls, data: dict) -> "ReindexManager":
         """
         Initialize Manages class from dict settings.
         """
@@ -41,24 +46,25 @@ class Manager:
         """
         Branching logic by input action.
         """
-        source_indexes = self.es_client.get_source_indexes()
-        if self.config.indexes:
-            source_indexes = self.es_client.get_user_indexes(
-                user_indexes=self.config.indexes, source_indexes=source_indexes
-            )
-        logger.info(f"Source ES host has {len(source_indexes)} indexes")
+        source_indexes = self.es_source_client.get_indexes()
 
-        dest_indexes = self.es_client.get_dest_indexes()
-        logger.info(f"Destination ES host has {len(dest_indexes)} indexes")
+        if user_indexes := self.config.indexes:
+            source_indexes = self._filter_user_indexes(
+                user_indexes=user_indexes, source_indexes=source_indexes
+            )
+        logger.info(f"Source elastic has {len(source_indexes)} indexes")
+
+        dest_indexes = self.es_dest_client.get_indexes()
+        logger.info(f"Destination elastic has {len(dest_indexes)} indexes")
 
         not_migrated_indexes, partial_migrated_indexes = check_migrated_indexes(
             source_indexes=source_indexes, dest_indexes=dest_indexes
         )
         logger.info(
-            f"Not migrated ES indexes: {len(not_migrated_indexes)}/{len(source_indexes)}"
+            f"Not migrated es indexes: {len(not_migrated_indexes)}/{len(source_indexes)}"
         )
         logger.info(
-            f"Partial migrated ES indexes: {len(partial_migrated_indexes)}/{len(source_indexes)}"
+            f"Partial migrated es indexes: {len(partial_migrated_indexes)}/{len(source_indexes)}"
         )
 
         # Calculate max concurrent task depends on CPU count.
@@ -91,3 +97,12 @@ class Manager:
             else:
                 logger.info(f"Task id: {task_id}. Reindex completed: {index}.")
                 logger.info(f"Tasks left: {len(futures)}")
+
+    @staticmethod
+    def _filter_user_indexes(
+        user_indexes: list[str], source_indexes: list[Index]
+    ) -> list[Index]:
+        """
+        Filter source indexes by user provided indexes.
+        """
+        return [index for index in source_indexes if index.name in user_indexes]

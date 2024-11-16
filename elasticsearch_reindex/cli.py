@@ -1,7 +1,7 @@
 import click
 from click_default_group import DefaultGroup
 
-from elasticsearch_reindex.manager import Manager
+from elasticsearch_reindex.manager import ReindexManager
 
 
 @click.group(cls=DefaultGroup, default="reindex", default_if_no_args=True)
@@ -73,6 +73,6 @@ def reindex(
         "concurrent_tasks": concurrent_tasks,
         "indexes": list(indexes),
     }
-    reindex_manager = Manager.from_dict(data=config)
+    reindex_manager = ReindexManager.from_dict(data=config)
     reindex_manager.start_reindex()
     click.echo("Success")

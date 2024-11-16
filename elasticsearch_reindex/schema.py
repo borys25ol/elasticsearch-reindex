@@ -31,6 +31,46 @@ class HttpAuth:
 
 
 @dataclass
+class ElasticsearchConfig:
+    """
+    Dataclass for storing Elasticsearch configuration data.
+    """
+
+    host: str
+    http_auth: HttpAuth | None
+
+
+def _parse_auth_string(auth_string: str) -> HttpAuth:
+    """
+    Parse a HTTP authentication string into a HttpAuth object.
+
+    This function takes a string containing username and password separated by a colon,
+    splits it, and creates a HttpAuth object with the parsed values.
+
+    Args:
+        auth_string (str): A string containing HTTP authentication credentials
+                           in the format 'username:password'.
+
+    Returns:
+        HttpAuth: An object containing the parsed username and password.
+
+    Raises:
+        ValueError: If the auth_string is not in the correct format.
+
+    Example:
+        auth = _parse_auth_string("user:pass123")
+        print(auth.username, auth.password)
+        user pass123
+    """
+    auth_data = auth_string.split(":", 1)
+    if len(auth_data) != 2:
+        raise ValueError(
+            "Invalid destination HTTP auth format. Expected 'username:password'"
+        )
+    return HttpAuth(username=auth_data[0], password=auth_data[1])
+
+
+@dataclass
 class Config:
     """
     Dataclass for storing init CLI args.
@@ -55,17 +95,12 @@ class Config:
         if self.source_http_auth:
             return _parse_auth_string(self.source_http_auth)
 
+    @property
+    def dest_es_config(self) -> ElasticsearchConfig:
+        return ElasticsearchConfig(host=self.dest_host, http_auth=self.http_auth_dest)
 
-def _parse_auth_string(auth_string: str) -> HttpAuth:
-    """
-    Parse destination HTTP auth string into HttpAuth object.
-
-    :param auth_string: Destination HTTP auth string in format 'username:password'.
-    :return: Parsed HttpAuth object.
-    """
-    auth_data = auth_string.split(":", 1)
-    if len(auth_data) != 2:
-        raise ValueError(
-            "Invalid destination HTTP auth format. Expected 'username:password'"
+    @property
+    def source_es_config(self) -> ElasticsearchConfig:
+        return ElasticsearchConfig(
+            host=self.source_host, http_auth=self.http_auth_source
         )
-    return HttpAuth(username=auth_data[0], password=auth_data[1])
