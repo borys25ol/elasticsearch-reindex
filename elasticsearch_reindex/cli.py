@@ -1,5 +1,3 @@
-from typing import List
-
 import click
 from click_default_group import DefaultGroup
 
@@ -64,7 +62,7 @@ def reindex(
     dest_http_auth: str,
     check_interval: int,
     concurrent_tasks: int,
-    indexes: List[str],
+    indexes: list[str],
 ) -> None:
     config = {
         "source_host": source_host,

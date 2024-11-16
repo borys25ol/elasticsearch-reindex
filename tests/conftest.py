@@ -1,6 +1,6 @@
+from collections.abc import Generator
 from datetime import datetime
 from time import sleep
-from typing import Generator, List
 
 import pytest
 
@@ -31,14 +31,14 @@ def check_testing_mode():
 
 
 @pytest.fixture()
-def test_messages() -> List[dict]:
+def test_messages() -> list[dict]:
     """
     Return messages with different id.
     """
     return [
         {
             "date": datetime.strptime("August 3, 2021", "%B %d, %Y").isoformat(),
-            "id": message_id ** 2,
+            "id": message_id**2,
             "text": "Some review",
             "source": "amazon",
         }
@@ -70,7 +70,7 @@ def elastic_client() -> ElasticsearchClient:
 
 @pytest.fixture()
 def insert_indexes(
-    test_messages: List[dict], elastic_client: ElasticsearchClient
+    test_messages: list[dict], elastic_client: ElasticsearchClient
 ) -> Generator[ReindexService, None, None]:
     """
     Return reindex service.

@@ -1,6 +1,7 @@
 """
-Setup the package.
+Set up the package.
 """
+
 from setuptools import find_packages, setup
 
 project_name = "elasticsearch-reindex"
@@ -16,11 +17,7 @@ with open("README.md") as read_me:
 
 packages = [package for package in find_packages(where=".", exclude=("test*",))]
 
-install_requires = [
-    "click-default-group==1.2.4",
-    "elasticsearch<8",
-    "requests>=2.32.3",
-]
+install_requires = ["click-default-group==1.2.4", "elasticsearch>7", "requests>=2.32.3"]
 
 setup(
     version=version,
@@ -44,7 +41,9 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
 )

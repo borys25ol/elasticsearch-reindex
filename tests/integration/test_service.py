@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 from elasticsearch import Elasticsearch
 
@@ -41,7 +39,7 @@ def test_valid_indexes_creation(
     """
     Test valid indexes creation.
     """
-    data: List[Index] = elastic_client.get_source_indexes()
+    data: list[Index] = elastic_client.get_source_indexes()
     assert len(data) == TEST_INDEXES_COUNT
 
 

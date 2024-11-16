@@ -1,4 +1,4 @@
-from typing import Iterable, List, Tuple
+from collections.abc import Iterable
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
@@ -9,7 +9,7 @@ from elasticsearch_reindex.schema import Index
 logger = create_logger(__name__)
 
 
-def chunkify(lst: List, n: int) -> Iterable:
+def chunkify(lst: list, n: int) -> Iterable:
     """
     Yield successive n-sized chunks from list.
     """
@@ -21,7 +21,7 @@ def _get_insert_action(body: dict, es_index: str) -> dict:
     return {"_index": es_index, **body}
 
 
-def bulk_insert(docs: List[dict], es_client: Elasticsearch, es_index: str) -> None:
+def bulk_insert(docs: list[dict], es_client: Elasticsearch, es_index: str) -> None:
     """
     Execute insert actions to ElasticSearch.
 
@@ -34,7 +34,7 @@ def bulk_insert(docs: List[dict], es_client: Elasticsearch, es_index: str) -> No
     logger.info(f"Successfully actions: {success}. Failed actions: {failed}")
 
 
-def get_flatten_dict(data: List[Index]) -> dict:
+def get_flatten_dict(data: list[Index]) -> dict:
     """
     Convert list of dataclasses to dict for fast searching.
     """
@@ -42,8 +42,8 @@ def get_flatten_dict(data: List[Index]) -> dict:
 
 
 def check_migrated_indexes(
-    source_indexes: List[Index], dest_indexes: List[Index]
-) -> Tuple[list, list]:
+    source_indexes: list[Index], dest_indexes: list[Index]
+) -> tuple[list, list]:
     """
     Check if index from `source_indexes` exist in `dest_indexes`.
     If index already exist we should check if all documents was transferred.
