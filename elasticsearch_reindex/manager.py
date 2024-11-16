@@ -1,6 +1,5 @@
 import os
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from typing import Dict
 
 from elasticsearch_reindex.client import ElasticsearchClient
 from elasticsearch_reindex.const import DEFAULT_CHECK_INTERVAL, DEFAULT_CONCURRENT_TASKS
@@ -30,14 +29,12 @@ class Manager:
         config = Config(
             source_host=data["source_host"],
             dest_host=data["dest_host"],
-            source_http_auth=data.get("source_http_auth", ""),
-            dest_http_auth=data.get("dest_http_auth", ""),
+            source_http_auth=data.get("source_http_auth"),
+            dest_http_auth=data.get("dest_http_auth"),
             indexes=data.get("indexes", []),
             check_interval=data.get("check_interval", DEFAULT_CHECK_INTERVAL),
             concurrent_tasks=data.get("concurrent_tasks", DEFAULT_CONCURRENT_TASKS),
         )
-        config.source_http_auth = tuple(config.source_http_auth.split(":", 1)) if config.source_http_auth else None
-        config.dest_http_auth = tuple(config.dest_http_auth.split(":", 1)) if config.dest_http_auth else None
         return cls(config=config)
 
     def start_reindex(self) -> None:
@@ -80,7 +77,7 @@ class Manager:
         self._process_result(futures=futures)
 
     @staticmethod
-    def _process_result(futures: Dict[Future, str]) -> None:
+    def _process_result(futures: dict[Future, str]) -> None:
         """
         Process ThreadPoolExecutor tasks result.
         """

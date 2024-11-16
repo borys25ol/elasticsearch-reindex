@@ -1,5 +1,4 @@
 from time import sleep
-from typing import Dict, Optional, Tuple, Union
 
 import requests
 
@@ -14,7 +13,7 @@ from elasticsearch_reindex.errors import (
     ElasticSearchInvalidTaskIDException,
 )
 from elasticsearch_reindex.logs import create_logger
-from elasticsearch_reindex.schema import Config
+from elasticsearch_reindex.schema import Config, HttpAuth
 
 logger = create_logger(__name__)
 
@@ -28,11 +27,7 @@ class ReindexService:
         self.config = config
         self._es_service = ElasticsearchClient(config)
 
-    def transfer_index(
-        self,
-        es_index: str,
-        check_interval: int = 10,
-    ) -> str:
+    def transfer_index(self, es_index: str, check_interval: int = 10) -> str:
         """
         Create reindex task and waiting for finish this task.
 
@@ -47,7 +42,9 @@ class ReindexService:
 
         while True:
             completed, status = self._check_task_completed(
-                dest_es_host=self.config.dest_host, task_id=task_id, dest_http_auth=self.config.dest_http_auth
+                dest_es_host=self.config.dest_host,
+                task_id=task_id,
+                http_auth=self.config.http_auth_dest,
             )
             logger.info(
                 f"Task id: {task_id}. "
@@ -68,19 +65,32 @@ class ReindexService:
         """
         endpoint = ES_CREATE_TASK_ENDPOINT.format(es_host=self.config.dest_host)
         reindex_payload = self._get_reindex_body(es_index=es_index)
-        response = requests.post(url=endpoint, json=reindex_payload, headers=HEADERS, auth=self.config.dest_http_auth)
-        task_id = response.json()["task"]
-        return task_id
+
+        auth = (
+            self.config.http_auth_dest.as_tuple()
+            if self.config.http_auth_dest
+            else None
+        )
+        response = requests.post(
+            url=endpoint,
+            json=reindex_payload,
+            headers=HEADERS,
+            auth=auth,
+            timeout=self.config.request_timeout,
+        )
+        return response.json()["task"]
 
     @staticmethod
     def _check_task_completed(
-        dest_es_host: str, task_id: str, dest_http_auth: Optional[Tuple[str]] = None
-    ) -> Tuple[bool, Dict[str, int]]:
+        dest_es_host: str, task_id: str, http_auth: HttpAuth | None
+    ) -> tuple[bool, dict[str, int]]:
         """
         Make request to Elasticsearch Tasks API and check task status.
         """
         endpoint = ES_CHECK_TASK_ENDPOINT.format(es_host=dest_es_host, task_id=task_id)
-        response = requests.get(url=endpoint, auth=dest_http_auth).json()
+
+        auth = http_auth.as_tuple() if http_auth else None
+        response = requests.get(url=endpoint, auth=auth, timeout=60).json()
 
         if (
             "error" in response
@@ -98,15 +108,20 @@ class ReindexService:
         }
         return response["completed"], data
 
-    def _get_reindex_body(self, es_index: str) -> Dict[str, Union[str, dict]]:
+    def _get_reindex_body(self, es_index: str) -> dict:
         """
         Return ElasticSearch reindex body for API request.
         """
+        remote_settings = {"host": self.config.source_host}
+        if self.config.http_auth_source:
+            remote_settings = remote_settings | {
+                "username": self.config.http_auth_source.username,
+                "password": self.config.http_auth_source.password,
+            }
+
         body = {
-            "source": {"remote": {"host": self.config.source_host}, "index": es_index},
+            "source": {"remote": remote_settings, "index": es_index},
             "conflicts": "proceed",
             "dest": {"index": es_index},
         }
-        if self.config.source_http_auth:
-            body["source"]["remote"]["username"], body["source"]["remote"]["password"] = self.config.source_http_auth
         return body
