@@ -23,7 +23,7 @@ def _get_flatten_dict(data: list[Index]) -> dict:
 
 def check_migrated_indexes(
     source_indexes: list[Index], dest_indexes: list[Index]
-) -> tuple[list, list]:
+) -> tuple[list[str], list[str]]:
     """
     Check if index from `source_indexes` exist in `dest_indexes`.
     If index already exist we should check if all documents was transferred.
