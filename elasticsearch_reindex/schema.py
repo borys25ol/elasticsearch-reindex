@@ -40,7 +40,7 @@ class ElasticsearchConfig:
     http_auth: HttpAuth | None
 
 
-def _parse_auth_string(auth_string: str) -> HttpAuth:
+def parse_auth_string(auth_string: str) -> HttpAuth:
     """
     Parse a HTTP authentication string into a HttpAuth object.
 
@@ -88,12 +88,12 @@ class Config:
     @property
     def http_auth_dest(self) -> HttpAuth | None:
         if self.dest_http_auth:
-            return _parse_auth_string(self.dest_http_auth)
+            return parse_auth_string(self.dest_http_auth)
 
     @property
     def http_auth_source(self) -> HttpAuth | None:
         if self.source_http_auth:
-            return _parse_auth_string(self.source_http_auth)
+            return parse_auth_string(self.source_http_auth)
 
     @property
     def dest_es_config(self) -> ElasticsearchConfig:

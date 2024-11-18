@@ -13,7 +13,7 @@ class ElasticsearchClient:
     Client for manipulation with Elasticsearch clients and indexes.
     """
 
-    settings = {"max_retries": 3, "timeout": 30, "retry_on_timeout": False}
+    settings = {"max_retries": 3, "request_timeout": 30, "retry_on_timeout": False}
 
     def __init__(self, es_host: str, http_auth: HttpAuth | None) -> None:
         self._http_auth = http_auth

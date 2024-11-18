@@ -29,7 +29,7 @@ setup(
     license="MIT",
     entry_points="""
        [console_scripts]
-       elasticsearch_reindex=elasticsearch_reindex.__main__:cli
+       elasticsearch-reindex=elasticsearch_reindex.__main__:cli
     """,
     author="Borys Oliinyk",
     author_email="oleynik.boris@gmail.com",

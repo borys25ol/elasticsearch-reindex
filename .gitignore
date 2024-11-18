@@ -1,6 +1,7 @@
 .ve
 env-shub
 .idea
+.coverage
 .DS_Store
 ._.DS_Store
 .env
