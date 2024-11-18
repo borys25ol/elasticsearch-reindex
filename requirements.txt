@@ -1,3 +1,2 @@
-click-default-group==1.2.4
 elasticsearch==8.16.0
 requests==2.32.3
