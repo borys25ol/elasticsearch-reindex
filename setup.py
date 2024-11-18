@@ -32,6 +32,7 @@ setup(
     entry_points="""
        [console_scripts]
        elasticsearch_reindex=elasticsearch_reindex.__main__:reindex
+       elasticsearch-reindex=elasticsearch_reindex.__main__:reindex
     """,
     packages=packages,
     package_data={package_name: ["py.typed"]},
