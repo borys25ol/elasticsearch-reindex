@@ -7,10 +7,8 @@ from setuptools import find_packages, setup
 project_name = "elasticsearch-reindex"
 package_name = "elasticsearch_reindex"
 
-description = (
-    "Python package for simple migration elasticsearch indexes between servers."
-)
-version = "1.2.0"
+description = "Python package for simple migration elasticsearch indexes between different elasticsearch nodes."
+version = "1.3.0"
 
 with open("README.md") as read_me:
     long_description = read_me.read()
