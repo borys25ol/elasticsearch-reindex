@@ -56,6 +56,11 @@ elasticsearch_reindex \
         -i test_index_1 -i test_index_2
 ```
 
+Also, there is a command alias `elasticsearch-reindex`:
+```shell
+elasticsearch-reindex ...
+```
+
 ### CLI Parameters
 
 
