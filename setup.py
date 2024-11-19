@@ -15,7 +15,7 @@ with open("README.md") as read_me:
 
 packages = [package for package in find_packages(where=".", exclude=("test*",))]
 
-install_requires = ["elasticsearch>7", "requests>=2.32.3"]
+install_requires = ["click>8", "elasticsearch>7", "requests>=2.32.3"]
 
 setup(
     name=project_name,
