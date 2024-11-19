@@ -1,24 +1,20 @@
-from typing import List
-
 import click
-from click_default_group import DefaultGroup
 
-from elasticsearch_reindex.manager import Manager
-
-
-@click.group(cls=DefaultGroup, default="reindex", default_if_no_args=True)
-def cli() -> None:
-    """
-    Main click group.
-    """
+from elasticsearch_reindex.manager import ReindexManager
 
 
-@cli.command()
+@click.group(invoke_without_command=True)
 @click.option(
     "--source_host",
     required=True,
     type=str,
     help="Source server: Elasticsearch host where data will be transferred from",
+)
+@click.option(
+    "--source_http_auth",
+    required=False,
+    type=str,
+    help="Source server: HTTP Basic authentication, username and password. Example: username:password",
 )
 @click.option(
     "--dest_host",
@@ -27,16 +23,10 @@ def cli() -> None:
     help="Destination server: Elasticsearch host where data will be transferred",
 )
 @click.option(
-    "--source_http_auth",
-    required=False,
-    type=str,
-    help="Source server: HTTP Basic authentication, username and password",
-)
-@click.option(
     "--dest_http_auth",
     required=False,
     type=str,
-    help="Destination server: HTTP Basic authentication, username and password",
+    help="Destination server: HTTP Basic authentication, username and password. Example: username:password",
 )
 @click.option(
     "--check_interval",
@@ -64,7 +54,7 @@ def reindex(
     dest_http_auth: str,
     check_interval: int,
     concurrent_tasks: int,
-    indexes: List[str],
+    indexes: list[str],
 ) -> None:
     config = {
         "source_host": source_host,
@@ -75,6 +65,5 @@ def reindex(
         "concurrent_tasks": concurrent_tasks,
         "indexes": list(indexes),
     }
-    reindex_manager = Manager.from_dict(data=config)
+    reindex_manager = ReindexManager.from_dict(data=config)
     reindex_manager.start_reindex()
-    click.echo("Success")

@@ -1,6 +1,7 @@
 """
 Provide errors for project.
 """
+
 ES_NODE_NOT_FOUND_ERROR = "Can not connect to ElasticSearch server: {host}"
 ES_TASK_ID_ERROR = (
     "Can not retrieve task status "

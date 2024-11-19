@@ -1,4 +1,4 @@
-from elasticsearch_reindex.cli import cli
+from elasticsearch_reindex.cli import reindex
 
 if __name__ == "__main__":
-    cli()
+    reindex()

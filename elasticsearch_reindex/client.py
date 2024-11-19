@@ -1,13 +1,10 @@
-from typing import List, Tuple
-
 from elasticsearch import Elasticsearch, exceptions
 
-from elasticsearch_reindex.const import DEFAULT_ES_KWARGS
 from elasticsearch_reindex.errors import (
     ES_NODE_NOT_FOUND_ERROR,
     ElasticSearchNodeNotFoundException,
 )
-from elasticsearch_reindex.schema import Config, Index
+from elasticsearch_reindex.schema import ElasticsearchConfig, HttpAuth, Index
 from elasticsearch_reindex.utils import chunkify
 
 
@@ -16,77 +13,64 @@ class ElasticsearchClient:
     Client for manipulation with Elasticsearch clients and indexes.
     """
 
-    def __init__(self, config: Config) -> None:
-        self.config = config
+    settings = {"max_retries": 3, "request_timeout": 30, "retry_on_timeout": False}
+
+    def __init__(self, es_host: str, http_auth: HttpAuth | None) -> None:
+        self._http_auth = http_auth
+        self._client = self._prepare_es_client(
+            es_host=es_host, es_http_auth=self.http_auth
+        )
+
+    @classmethod
+    def from_config(cls, config: ElasticsearchConfig) -> "ElasticsearchClient":
+        """
+        Initialize ElasticsearchClient from ElasticsearchConfig object.
+        """
+        return cls(es_host=config.host, http_auth=config.http_auth)
 
     @property
-    def source_client(self) -> Elasticsearch:
+    def client(self) -> Elasticsearch:
         """
-        Return Elasticsearch client where data will be transferred from.
+        Return prepared Elasticsearch client.
         """
-        return self._get_es_client(es_host=self.config.source_host, es_http_auth=self.config.source_http_auth)
+        return self._client
 
     @property
-    def dest_client(self) -> Elasticsearch:
+    def http_auth(self) -> tuple[str, str] | None:
         """
-        Return Elasticsearch client where data will be transferred.
+        Return HTTP auth credentials if provided.
         """
-        return self._get_es_client(es_host=self.config.dest_host, es_http_auth=self.config.dest_http_auth)
+        return self._http_auth.as_tuple() if self._http_auth else None
 
-    def get_source_indexes(self) -> List[Index]:
+    def get_indexes(self) -> list[Index]:
         """
-        Return all indexes in Elasticsearch and amount of documents.
+        Return all Elasticsearch indexes and amount of documents.
         """
-        indexes = self.source_client.cat.indices(
-            h="index,docs.count", s="index",
-            http_auth=self.config.source_http_auth,
-        )
-        return self._get_all_indexes(indexes=indexes.split())
+        indexes = self.client.cat.indices(h="index,docs.count", s="index")
+        return self._parse_indexes(indexes=indexes.split())
 
-    def get_dest_indexes(self) -> List[Index]:
-        """
-        Return all indexes in Elasticsearch and amount of documents.
-        """
-        indexes = self.dest_client.cat.indices(
-            h="index,docs.count", s="index",
-            http_auth=self.config.dest_http_auth,
-        )
-        return self._get_all_indexes(indexes=indexes.split())
-
-    @staticmethod
-    def get_user_indexes(
-        source_indexes: List[Index], user_indexes: List[str]
-    ) -> List[Index]:
-        """
-        Compare indexes provided by user.
-        Return indexes for migration.
-
-        :param source_indexes: List of source indexes.
-        :param user_indexes: List of user indexes.
-        :return: List of `Index` objects.
-        """
-        return [index for index in source_indexes if index.name in set(user_indexes)]
-
-    @staticmethod
-    def _get_es_client(es_host: str, es_http_auth: [Tuple[str], None]) -> Elasticsearch:
+    def _prepare_es_client(
+        self, es_host: str, es_http_auth: tuple[str, str] | None = None
+    ) -> Elasticsearch:
         """
         Ping ElasticSearch server and return initialized client object.
         """
-        client = Elasticsearch(hosts=es_host, **DEFAULT_ES_KWARGS)  # type: ignore
+        client = Elasticsearch(hosts=es_host, basic_auth=es_http_auth, **self.settings)
         try:
-            client.info(http_auth=es_http_auth)
+            client.info()
         except exceptions.ConnectionError:
             raise ElasticSearchNodeNotFoundException(
-                message=ES_NODE_NOT_FOUND_ERROR.format(host=es_host)
+                ES_NODE_NOT_FOUND_ERROR.format(host=es_host)
             )
         except Exception as e:
             raise ElasticSearchNodeNotFoundException(
-                message=ES_NODE_NOT_FOUND_ERROR.format(host='{}, error: {}'.format(es_host, e))
+                ES_NODE_NOT_FOUND_ERROR.format(host=f"{es_host}, error: {e}")
             )
+
         return client
 
     @staticmethod
-    def _get_all_indexes(indexes: List[str]) -> List[Index]:
+    def _parse_indexes(indexes: list[str]) -> list[Index]:
         """
         Return all indexes in Elasticsearch and amount of documents.
         """

@@ -7,17 +7,36 @@ install_hooks:
 	pip install -r requirements-ci.txt; \
 	pre-commit install; \
 
-clean:
-	test -d .ve && rm -rf .ve
+docker_build:
+	docker-compose up -d --build
 
-test:
-	.ve/bin/python -m pytest .
+docker_up:
+	docker-compose up -d
 
-run_hooks_on_all_files:
+docker_down:
+	docker-compose down
+
+docker_stop:
+	docker-compose stop
+
+docker_restart:
+	docker-compose stop
+	docker-compose up -d
+
+run_hooks:
 	pre-commit run --all-files
 
+test:
+	python -m pytest -v ./tests
+
+test-cov:
+	python -m pytest  --cov=./elasticsearch_reindex --cov-report term-missing ./tests
+
 style:
-	flake8 main && isort main --diff && black main --check
+	flake8 elasticsearch_reindex && isort elasticsearch_reindex --diff && black elasticsearch_reindex --check
+
+lint:
+	flake8 elasticsearch_reindex && isort elasticsearch_reindex && black elasticsearch_reindex
 
 types:
 	mypy --namespace-packages -p "elasticsearch_reindex" --config-file setup.cfg

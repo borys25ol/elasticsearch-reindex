@@ -1,30 +1,27 @@
 """
-Setup the package.
+Set up the package.
 """
+
 from setuptools import find_packages, setup
 
 project_name = "elasticsearch-reindex"
 package_name = "elasticsearch_reindex"
 
-description = (
-    "Python package for simple migration elasticsearch indexes between servers."
-)
-version = "1.2.0"
+description = "Python package for simple migration elasticsearch indexes between different elasticsearch nodes."
+version = "1.3.0"
 
 with open("README.md") as read_me:
     long_description = read_me.read()
 
 packages = [package for package in find_packages(where=".", exclude=("test*",))]
 
-install_requires = [
-    "click-default-group==1.2.2",
-    "elasticsearch>=7.13.4,<8",
-    "requests>=2.26.0",
-]
+install_requires = ["elasticsearch>7", "requests>=2.32.3"]
 
 setup(
-    version=version,
     name=project_name,
+    version=version,
+    author="Borys Oliinyk",
+    author_email="oleynik.boris@gmail.com",
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -32,21 +29,18 @@ setup(
     license="MIT",
     entry_points="""
        [console_scripts]
-       elasticsearch_reindex=elasticsearch_reindex.__main__:cli
+       elasticsearch_reindex=elasticsearch_reindex.__main__:reindex
+       elasticsearch-reindex=elasticsearch_reindex.__main__:reindex
     """,
-    author="Borys Oliinyk",
-    author_email="oleynik.boris@gmail.com",
     packages=packages,
     package_data={package_name: ["py.typed"]},
     include_package_data=True,
     install_requires=install_requires,
+    python_requires=">=3.10",
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Intended Audience :: Developers",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
 )
